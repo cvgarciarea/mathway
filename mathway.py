@@ -23,56 +23,19 @@ import math
 
 from constants import Re
 from constants import Set
+from constants import FunctionType
 
-from utils import sgn
-from utils import is_number
-from utils import ignore_values
-from utils import get_priority
+from utils import clear_float
+from utils import get_function_type_name
 from utils import calculate_math_expression
 
-
-def char_at(string, index):
-    if len(string) > index:
-        return string[index]
-    else:
-        return ""
+from value_getter import ValueGetter
 
 
-class MathSintaxError(ArithmeticError):
+class FunctionTypeError(ArithmeticError):
 
      def __init__(self, message):
-        super(MathSintaxError, self).__init__(message)
-
-
-class Stack(list):
-
-     def __init__(self):
-        list.__init__(self)
-
-     def empty(self):
-         return len(self) == 0
-
-     def push(self, item):
-         self.append(item)
-
-     def peek(self):
-         return self[-1]
-
-     def size(self):
-         return len(self)
-
-
-class FunctionType:
-    NULL          = 0
-    CONSTANT      = 1  # x + a = 0
-    LINEAL        = 2  # ax + b = 0
-    QUADRATIC     = 3  # ax^2 + bx + c = 0
-    CUBIC         = 4  # ax^3 + bx^2 + cx + d = 0
-    POLINOMIC     = 5  # ax^n + bx^n-1 + ... = 0
-    EXPONENTIAL   = 6  # a^x + b = 0
-    RACIONAL      = 7  # (ax + b) / (cx + d) = 0
-    LOGARITHMIC   = 8  # 
-    TRIGONOMETRIC = 9  # cos/sin/tan (ax) + b = 0
+        super(FunctionTypeError, self).__init__(message)
 
 
 class Function(object):
@@ -205,12 +168,130 @@ class Function(object):
         else:
             return Set.EMPTY
 
+def raise_function_type_error(function, ftype):
+    message = "%s %s %s %s" % (function.formula,
+                              _("isn't a"),
+                              get_function_type_name(ftype),
+                              _("polunomial."))
 
-import sys
-expr = "3 + 2"
+    raise FunctionTypeError(message)
 
-if len(sys.argv) == 2:
-    expr = sys.argv[1]
 
-f = Function(expr)
-print f.type
+class Equation(object):
+
+    def __init__(self, function, ftype):
+        if function.type != ftype:
+            raise_function_type_error(function, ftype)
+
+        """
+        function = 0
+        """
+
+        self.function = function
+
+    @classmethod
+    def new_from_string(self, formula):
+        raise NotImplementedError(_("You must replace 'new_from_string'"))
+
+    @classmethod
+    def new_from_two_members(self, member1, member2):
+        """
+        member1 = member2
+        member1 - member2 = 0
+        """
+
+        raise NotImplementedError(_("You must replace 'new_from_two_members"))
+
+    def solve(self):
+        raise NotImplementedError(_("You must replace 'solve'"))
+
+    def solve_step_by_step(self):
+        raise NotImplementedError(_("You must replace 'solve_step_by_step'"))
+
+    def get_expression(self):
+        return self.function.formula + " = 0"
+
+
+class FirstDegreeEquation(Equation):
+
+    def __init__(self, function):
+        Equation.__init__(self, function, FunctionType.LINEAL)
+
+    @classmethod
+    def new_from_string(self, formula):
+        function = Function(formula)
+        return FirstDegreeEquation(function)
+
+    @classmethod
+    def new_from_two_members(self, member1, member2):
+        ftype = FunctionType.LINEAL
+        if member1.type != ftype:
+            raise_function_type_error(member1, ftype)
+
+        if member2.type != ftype:
+            raise_function_type_error(member2, ftype)
+
+        formula = "%s - (%s)" % (member1.formula, member2.formula)
+        function = Function(formula)
+        return FirstDegreeEquation(function)
+
+    def solve(self):
+        solutions = []
+        values = ValueGetter.lineal(self.function)
+        a = values[0]
+        b = values[1]
+
+        if a == 0:
+            solutions = []
+        else:
+            solutions = [b / (a * -1)]
+
+        return solutions
+
+    def solve_step_by_step(self):
+        # ax + b = 0
+        # ax = -b
+        # x = -b / a
+
+        steps = []
+        step = ""
+        values = ValueGetter.lineal(self.function)
+        a = values[0]
+        b = values[1]
+        has_b = (b != 0)
+
+        step += "%sx" % clear_float(a)
+
+        if has_b:
+            if b > 0:
+                step += " +"
+
+            step += " %s" % clear_float(b)
+
+        step += " = 0"
+        steps.append(step)
+        step = ""
+
+        # ax = -b
+        if has_b:
+            step = "%sx = %s" % (clear_float(a), clear_float(b * -1))
+            steps.append(step)
+            step = ""
+
+        if has_b and b % (a * -1) == 0:
+            steps.append("x = %s" % (clear_float(b / (a * -1))))
+            step = "S = { %s }" % clear_float(b / (a * -1))
+            steps.append(step)
+        elif has_b and b % (a * -1) != 0:
+            if (a < 0 and -b > 0) or (-b < 0 and a > 0):
+                d = "-%s / %s" % (clear_float(abs(b)), clear_float(abs(a)))
+            else:
+                d = "%s / %s" % (clear_float(abs(b)), clear_float(abs(a)))
+
+            steps.append("x = %s" % d)
+            steps.append("S = { %s }" % d)
+        elif not has_b:
+            steps.append("S = { 0 }")
+
+        return steps
+

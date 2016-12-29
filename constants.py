@@ -40,6 +40,7 @@ MATH_EXPRESSIONS = {
     "rnd(": "round(",
 }
 
+
 class Re:
     CONSTANT = "^[-+]?(\\d+)*(.(\\d+))?$"
     TRIGONOMETRIC = "[-+]?(\\d+)*(.(\\d+))?[+-]?(?:sec|tan|cos)[(].+[)]"
@@ -57,3 +58,16 @@ class Set:
     RACIONALS = "ℚ"
     REALS     = "ℝ"
     COMPLEXES = "ℂ"
+
+
+class FunctionType:
+    NULL          = 0
+    CONSTANT      = 1  # x + a = 0
+    LINEAL        = 2  # ax + b = 0
+    QUADRATIC     = 3  # ax^2 + bx + c = 0
+    CUBIC         = 4  # ax^3 + bx^2 + cx + d = 0
+    POLINOMIC     = 5  # ax^n + bx^n-1 + ... = 0
+    EXPONENTIAL   = 6  # a^x + b = 0
+    RACIONAL      = 7  # (ax + b) / (cx + d) = 0
+    LOGARITHMIC   = 8  # 
+    TRIGONOMETRIC = 9  # cos/sin/tan (ax) + b = 0

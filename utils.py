@@ -19,6 +19,9 @@
 # Boston, MA 02111-1307, USA.
 
 import math
+from gettext import gettext as _
+
+from constants import FunctionType
 from constants import MATH_EXPRESSIONS
 
 
@@ -29,38 +32,6 @@ def is_number(value):
     except:
         return False
     #return value.replace(".", "", 1).isdigit()
-
-
-def ignore_values(old_list, ignored=""):
-    new_list = []
-    for value in old_list:
-        if value != ignored:
-            new_list.append(value)
-
-    return new_list
-
-def sgn(value):
-    if a < 0:
-        return -1
-
-    elif a > 0:
-        return 1
-
-    else:
-        return 0
-
-def get_priority(sign):
-    if sign in ["+", "-"]:
-        return 0
-
-    elif sign in ["*", "/", "%"]:
-        return 1
-
-    elif sign in ["**", "^"]:
-        return 2
-
-    else:
-        return -1
 
 
 def log(value):
@@ -114,3 +85,49 @@ def parse_math_expression(expression):
 def calculate_math_expression(expression):
     parsed = parse_math_expression(expression)
     return eval(parsed)
+
+
+def get_function_type_name(ftype):
+    if ftype == FunctionType.CONSTANT:
+        return _("Constant")
+
+    elif ftype == FunctionType.LINEAL:
+        return _("Lineal")
+
+    elif ftype == FunctionType.QUADRATIC:
+        return _("Quadratic")
+
+    elif ftype == FunctionType.CUBIC:
+        return _("Cubic")
+
+    elif ftype == FunctionType.POLINOMIC:
+        return _("Polinomic")
+
+    elif ftype == FunctionType.EXPONENTIAL:
+        return _("Exponential")
+
+    elif ftype == FunctionType.RACIONAL:
+        return _("Racional")
+
+    elif ftype == FunctionType.LOGARITHMIC:
+        return _("Logarithmic")
+
+    elif ftype == FunctionType.TRIGONOMETRIC:
+        return _("Trigonometric")
+
+    else:
+        return _("Null")
+
+
+def ignore_values(old_list, ignored=""):
+    new_list = []
+    for value in old_list:
+        if value != ignored:
+            new_list.append(value)
+
+    return new_list
+
+
+def clear_float(number):
+    format = "%d" if number.is_integer() else "%s"
+    return format % number
