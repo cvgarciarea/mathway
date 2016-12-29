@@ -264,9 +264,11 @@ class FirstDegreeEquation(Equation):
 
         if has_b:
             if b > 0:
-                step += " +"
+                step += " + "
+            else:
+                step += " - "
 
-            step += " %s" % clear_float(b)
+            step += "%s" % clear_float(abs(b))
 
         step += " = 0"
         steps.append(step)

@@ -22,7 +22,7 @@ from mathway import FirstDegreeEquation
 
 
 def equation_degree1():
-    formula = "3x + 1"
+    formula = "3x - 1"
     eq = FirstDegreeEquation.new_from_string(formula)
     steps = eq.solve_step_by_step()
     print "Solve: " + eq.get_expression()
